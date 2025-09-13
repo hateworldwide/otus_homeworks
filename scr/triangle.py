@@ -2,7 +2,6 @@ import math
 
 from scr.figure import Figure
 
-
 class Triangle(Figure):
 
     def __init__(self, side_a, side_b, side_c):
@@ -17,8 +16,10 @@ class Triangle(Figure):
 
     @property
     def get_perimeter(self):
-        return self.side_a + self.side_b + self.side_c
+        perimeter = self.side_a + self.side_b + self.side_c
+        return perimeter
 
+    @property
     def get_area(self):
         pp = self.get_perimeter / 2
         return math.sqrt(pp * (pp - self.side_a) * (pp - self.side_b) * ( pp - self.side_c))

@@ -13,4 +13,6 @@ class Figure:
     def add_area(self, other_figure):
         if not isinstance(other_figure, Figure):
             raise ValueError("Should be a Figure")
-        return self.get_area + other_figure.get_area
+        a = self.get_area
+        b = other_figure.get_area
+        return a + b
