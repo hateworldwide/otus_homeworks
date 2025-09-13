@@ -22,9 +22,3 @@ class Triangle(Figure):
     def get_area(self):
         pp = self.get_perimeter / 2
         return math.sqrt(pp * (pp - self.side_a) * (pp - self.side_b) * ( pp - self.side_c))
-
-
-x = Triangle(5,4, 3)
-
-print(x.get_area())
-print(x.get_perimeter)
