@@ -4,6 +4,7 @@ import math
 
 class User():
     def __init__(self, name, gender, address, age):
+        self.books = None
         self.name = name
         self.gender = gender
         self.address = address
@@ -16,6 +17,10 @@ class User():
         return self.address
     def getUserAge(self):
         return self.age
+    def putBooks(self, books):
+        self.books = books
+    def getBooks(self):
+        return self.books
 
 class Book():
     def __init__(self, title, author, pages, genre):
@@ -32,6 +37,26 @@ class Book():
     def getGenre(self):
         return self.genre
 
+def devide_books(books, users):
+    count = math.ceil(books.__len__() / users.__len__())
+    count_floor = math.floor(books.__len__() / users.__len__())
+    user_count = users.__len__()
+    book_count = books.__len__()
+    for user in users:
+        book_list = []
+        if book_count % user_count == 0:
+            count = count_floor
+        for i in range(count):
+            book = books[0]
+            books.remove(book)
+            book_dict = {'title': book.getTitle(),
+                         'author': book.getAuthor(),
+                         'pages': book.getPages(),
+                         'genre': book.getGenre()}
+            book_list.append(book_dict)
+        user.putBooks(book_list)
+        book_count -= count
+        user_count -= 1
 
 books = []
 users = []
@@ -48,23 +73,17 @@ with open('users.json', 'r') as jsonfile1:
     for user in data:
         users.append(User(user.get('name'), user.get('gender'), user.get('address'), str(user.get('age'))))
 
+devide_books(books, users)
+
 main_list = []
-count = math.ceil(books.__len__()/users.__len__())
-count_floor = math.floor(books.__len__()/users.__len__())
-user_count = users.__len__()
-book_count = books.__len__()
+
 with open ('result.json', 'w') as jsonfile:
     for user in users:
-        book_list = []
-        if book_count%user_count == 0:
-            count = count_floor
-        for i in range(count):
-            book = books[0]
-            books.remove(book)
-            book_dict = {'title': book.getTitle(), 'author': book.getAuthor(), 'pages': book.getPages(), 'genre': book.getGenre()}
-            book_list.append(book_dict)
-        template = {'name': user.getUserName(), 'gender': user.getUserGender(), 'address': user.getUserAddress(), 'age': user.getUserAge(), 'books': book_list}
+        template = {'name': user.getUserName(),
+                    'gender': user.getUserGender(),
+                    'address': user.getUserAddress(),
+                    'age': user.getUserAge(),
+                    'books': user.getBooks()}
         main_list.append(template)
-        book_count -= count
-        user_count -= 1
+
     json.dump(main_list, jsonfile, indent=4)
