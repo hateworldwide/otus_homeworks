@@ -9,18 +9,6 @@ class User():
         self.gender = gender
         self.address = address
         self.age = age
-    def getUserName(self):
-        return self.name
-    def getUserGender(self):
-        return self.gender
-    def getUserAddress(self):
-        return self.address
-    def getUserAge(self):
-        return self.age
-    def putBooks(self, books):
-        self.books = books
-    def getBooks(self):
-        return self.books
 
 class Book():
     def __init__(self, title, author, pages, genre):
@@ -28,20 +16,20 @@ class Book():
         self.author = author
         self.pages = pages
         self.genre = genre
-    def getTitle(self):
-        return self.title
-    def getAuthor(self):
-        return self.author
-    def getPages(self):
-        return self.pages
-    def getGenre(self):
-        return self.genre
+    @classmethod
+    def from_dict(cls, book_dict: dict):
+        return cls(
+            book_dict.get("Title"),
+            book_dict.get("Author"),
+            int(book_dict.get("Pages")),
+            book_dict.get("Genre")
+        )
 
 def devide_books(books, users):
-    count = math.ceil(books.__len__() / users.__len__())
-    count_floor = math.floor(books.__len__() / users.__len__())
-    user_count = users.__len__()
-    book_count = books.__len__()
+    count = math.ceil(len(books) / len(users))
+    count_floor = math.floor(len(books) / len(users))
+    user_count = len(users)
+    book_count = len(books)
     for user in users:
         book_list = []
         if book_count % user_count == 0:
@@ -49,10 +37,10 @@ def devide_books(books, users):
         for i in range(count):
             book = books[0]
             books.remove(book)
-            book_dict = {'title': book.getTitle(),
-                         'author': book.getAuthor(),
-                         'pages': book.getPages(),
-                         'genre': book.getGenre()}
+            book_dict = {'title': book.title,
+                         'author': book.author,
+                         'pages': book.pages,
+                         'genre': book.genre}
             book_list.append(book_dict)
         user.putBooks(book_list)
         book_count -= count
@@ -66,7 +54,7 @@ with open('books.csv', 'r') as csvfile:
     header = next(reader)
     for row in reader:
         book = dict(zip(header, row))
-        books.append(Book(book.get("Title"), book.get("Author"), book.get("Pages"), book.get("Genre")))
+        books.append(Book.from_dict(book))
 
 with open('users.json', 'r') as jsonfile1:
     data = json.load(jsonfile1)
