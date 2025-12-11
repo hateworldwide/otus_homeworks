@@ -1,77 +1,67 @@
-from selenium.webdriver import ActionChains
-from selenium.webdriver.common.by import By
-
 from scr.conftest import browser
-from scr.test_part2 import wait_element
+from scr.page_objects.main_page import MainPage
+from scr.page_objects.objects.admin_page import AdminPage
 
 def test_login_as_admin(browser):
-    browser.get(f"http://{browser.base_url}/administration")
-    actions = ActionChains(browser)
-    username_input = browser.find_element(By.CSS_SELECTOR, 'input[name="username"]')
-    password_input = browser.find_element(By.CSS_SELECTOR, 'input[id="input-password"]')
-    actions.click(username_input).send_keys("user")
-    actions.perform()
-    actions.click(password_input).send_keys("bitnami")
-    actions.perform()
-    actions.click(browser.find_element(By.CSS_SELECTOR, 'button[type="submit"]'))
-    actions.perform()
-    wait_element('[id="nav-logout"][class="nav-item"]', browser)
+    admin_page = AdminPage(browser)
+    admin_page.open()
+    admin_page.login("user", "bitnami")
+    admin_page.is_logout_link_visible()
 
 def test_add_item_to_cart(browser):
-    browser.get(f"http://{browser.base_url}")
-    actions = ActionChains(browser)
-    product = browser.find_element(By.CSS_SELECTOR, '[class="product-thumb"]')
-    add_to_cart = product.find_element(By.CSS_SELECTOR, 'button[type="submit"][title="Add to Cart"]')
-    product_names = product.find_elements(By.CSS_SELECTOR, 'h4 a')
-    product_name = product_names[0].text
-    actions.click(add_to_cart)
-    actions.perform()
-    browser.get(f"http://{browser.base_url}/en-gb?route=checkout/cart")
-    item_in_cart = browser.find_element(By.CSS_SELECTOR, '[class="text-start text-wrap"] > a')
-    assert item_in_cart.text == product_name
+    main_page = MainPage(browser)
+    main_page.open()
+    product = main_page.get_random_product()
+    product_name = main_page.get_product_name(product)
+    main_page.add_to_cart(product)
+    cart_page = main_page.go_to_cart()
+    item_in_cart_name = cart_page.get_item_name()
+    assert item_in_cart_name == product_name
 
 def test_change_currency(browser):
-    browser.get(f"http://{browser.base_url}")
-    old_currency = browser.find_element(By.CSS_SELECTOR, 'strong')
-    old_prices = browser.find_elements(By.CSS_SELECTOR, '[class="price-new"]')
-    actions = ActionChains(browser)
-    currency_dropdown = browser.find_element(By.CSS_SELECTOR, '[id="form-currency"] > div')
-    actions.click(currency_dropdown)
-    actions.perform()
-    currency_list = browser.find_elements(By.CSS_SELECTOR, '[class="dropdown-menu show"] > li > a')
-    current_currency = ""
-    for currency in currency_list:
-        if old_currency.text not in currency.text:
-            actions.click(currency)
-            current_currency = currency.text
-            break
-    actions.perform()
-    new_prices = browser.find_elements(By.CSS_SELECTOR, '[class="price-new"]')
-    for price in new_prices:
-        assert price not in old_prices, "New price: {price.text}, with current currency {current_currency}"
+    main_page = MainPage(browser)
+    main_page.open()
+    old_currency = main_page.get_current_currency()
+    old_prices = main_page.get_all_prices()
+    new_currency = main_page.switch_to_different_currency()
+    new_prices = main_page.get_all_prices()
+    main_page.check_currencies(old_currency, new_currency)
+    main_page.check_prices(new_currency, enumerate(zip(old_prices, new_prices)))
 
 def test_currency_in_cart(browser):
-    browser.get(f"http://{browser.base_url}")
-    actions = ActionChains(browser)
+    main_page = MainPage(browser)
+    main_page.open()
+    main_page.add_to_cart(main_page.get_random_product())
+    cart_page = main_page.go_to_cart()
+    old_currency = cart_page.get_current_currency()
+    old_prices = cart_page.get_all_prices()
+    new_currency = cart_page.switch_to_different_currency()
+    new_prices = cart_page.get_all_prices()
+    cart_page.check_currencies(old_currency, new_currency)
+    cart_page.check_prices(new_currency, enumerate(zip(old_prices, new_prices)))
 
-    add_item = browser.find_element(By.CSS_SELECTOR, 'button[type="submit"][title="Add to Cart"]')
-    actions.click(add_item)
-    actions.click(add_item)
-    actions.perform()
-    browser.get(f"http://{browser.base_url}/en-gb?route=checkout/cart")
-    currency_dropdown = browser.find_element(By.CSS_SELECTOR, '[id="form-currency"] > div')
-    actions.click(currency_dropdown)
-    actions.perform()
-    old_currency = browser.find_element(By.CSS_SELECTOR, 'strong')
-    currency_list = browser.find_elements(By.CSS_SELECTOR, '[class="dropdown-menu show"] > li > a')
-    old_prices = browser.find_elements(By.XPATH, "//table[@class='table table-bordered']//tbody/tr/td[5][@class='text-end']")
-    current_currency = ""
-    for currency in currency_list:
-        if old_currency.text not in currency.text:
-            actions.click(currency)
-            current_currency = currency.text
-            break
-    actions.perform()
-    new_prices = browser.find_elements(By.XPATH, "//table[@class='table table-bordered']//tbody/tr/td[5][@class='text-end']")
-    for price in new_prices:
-        assert price not in old_prices, "New price: {price.text}, with current currency {current_currency}"
+def test_add_product(browser):
+    admin_page = AdminPage(browser)
+    admin_page.open()
+    admin_page.login("user", "bitnami")
+    admin_page.open_product_section()
+    admin_page.open_add_product()
+    admin_page.fill_required_fields()
+    admin_page.submit()
+    admin_page.is_success()
+
+def test_delete_product(browser):
+    admin_page = AdminPage(browser)
+    admin_page.open()
+    admin_page.login("user", "bitnami")
+    admin_page.open_product_section()
+    admin_page.delete_some_item()
+    admin_page.is_success()
+
+def test_register_client(browser):
+    main_page = MainPage(browser)
+    main_page.open()
+    register_page = main_page.open_register()
+    register_page.fill_fields()
+    register_page.submit()
+    register_page.is_success()
