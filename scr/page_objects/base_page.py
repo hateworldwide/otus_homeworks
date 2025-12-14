@@ -1,8 +1,10 @@
+import logging
 from selenium.common import TimeoutException
 from selenium.webdriver import ActionChains
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
+from scr.utils.allure_decorators import log_action
 
 class BasePage:
 
@@ -16,7 +18,9 @@ class BasePage:
         self.base_url = base_url or getattr(browser, "base_url", "")
         self.wait = WebDriverWait(self.browser, 6)
         self.actions = ActionChains(browser)
+        self.logger = logging.getLogger(self.__class__.__name__)
 
+    @log_action
     def open(self, url=None):
         url_to_open = url or self.base_url
         if url_to_open:
@@ -25,9 +29,11 @@ class BasePage:
             raise ValueError("URL не указан для открытия страницы")
         return self
 
+    @log_action
     def find_element(self, locator):
         return self.browser.find_element(*locator)
 
+    @log_action
     def wait_for_element(self, selector: tuple):
         try:
             return WebDriverWait(self.browser, 10).until(
@@ -36,16 +42,17 @@ class BasePage:
         except TimeoutException:
             raise AssertionError("Cant find elements by locator: {}".format(selector))
 
-
+    @log_action
     def get_current_currency(self):
         return self.find_element(self.CURRENT_CURRENCY).text
 
-
+    @log_action
     def open_currency_dropdown(self):
         currency_dropdown = self.browser.find_element(*self.CURRENCY_DROPDOWN)
         self.actions.click(currency_dropdown).perform()
         return self
 
+    @log_action
     def switch_to_different_currency(self):
         current_currency = self.get_current_currency()
         self.open_currency_dropdown()
@@ -56,9 +63,11 @@ class BasePage:
                 return currency_option.text
         return None
 
+    @log_action
     def check_currencies(self, old_currency, new_currency):
         assert old_currency != new_currency, f"Валюта не изменилась. Текущая валюта: {old_currency}"
 
+    @log_action
     def check_prices(self, new_currency, prices: enumerate):
         for i, (old_price, new_price) in prices:
             assert old_price != new_price, (
@@ -68,5 +77,6 @@ class BasePage:
                 f"Текущая валюта: {new_currency}"
             )
 
+    @log_action
     def submit(self):
         self.actions.click(self.find_element(self.SUBMIT)).perform()
