@@ -1,8 +1,8 @@
 import allure
 
-from scr.conftest import browser
-from scr.page_objects.main_page import MainPage
-from scr.page_objects.objects.admin_page import AdminPage
+from .scr.conftest import browser
+from .scr.page_objects.main_page import MainPage
+from .scr.page_objects.objects.admin_page import AdminPage
 
 @allure.epic("Admin page")
 @allure.feature("Login as admin")
