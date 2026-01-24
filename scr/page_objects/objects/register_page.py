@@ -1,3 +1,4 @@
+import random
 import time
 
 import allure
@@ -23,17 +24,15 @@ class RegisterPage(BasePage):
 
     @allure.step("Fill required fields")
     @log_action
-    @screenshot_on_fail
     def fill_fields(self):
         self.actions.click(self.wait_for_element(self.FIRST_NAME)).send_keys("John").perform()
         self.actions.click(self.find_element(self.LAST_NAME)).send_keys("John").perform()
-        self.actions.click(self.find_element(self.EMAIL)).send_keys("John1211145@yaya.ru").perform()
+        self.actions.click(self.find_element(self.EMAIL)).send_keys(f"John{time.time()}@yaya.ru").perform()
         self.actions.click(self.find_element(self.PASSWORD)).send_keys("John").perform()
         self.actions.click(self.find_element(self.AGREE)).perform()
 
     @allure.step("Check account creating status")
     @log_action
-    @screenshot_on_fail
     def is_success(self):
         time.sleep(1)
         status = self.wait_for_element(self.SUCCESS).text
