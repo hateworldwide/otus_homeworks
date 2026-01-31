@@ -1,7 +1,9 @@
+import allure
 from selenium.webdriver import ActionChains
 from selenium.webdriver.common.by import By
 
 from scr.page_objects.base_page import BasePage
+from scr.utils.allure_decorators import *
 
 
 class AdminPage(BasePage):
@@ -18,7 +20,7 @@ class AdminPage(BasePage):
     MODEL_PLACEHOLDER = (By.CSS_SELECTOR, 'input[placeholder="Model"]')
     SEO_TAB = (By.CSS_SELECTOR, 'a[href="#tab-seo"]')
     KEYWORD_PLACEHOLDER = (By.CSS_SELECTOR, 'input[placeholder="Keyword"]')
-    KEYWORD = "222228"
+    KEYWORD = "222229"
     SUCCESS_DONE = (By.CSS_SELECTOR, '#alert .alert-success')
     RANDOM_ITEM_TO_DELETE = (By.CSS_SELECTOR, 'tbody tr input[name="selected[]"]')
     DELETE_BUTTON = (By.CSS_SELECTOR, '[title="Delete"]')
@@ -27,21 +29,36 @@ class AdminPage(BasePage):
         super().__init__(browser, url)
         self.actions = ActionChains(browser)
 
+    @allure.step("Administrator logins")
+    @log_action
+    @screenshot_on_fail
     def login(self, username, password):
         self.actions.click(self.find_element(self.USERNAME)).send_keys(username).perform()
         self.actions.click(self.find_element(self.PASSWORD)).send_keys(password).perform()
         self.actions.click(self.find_element(self.SUBMIT)).perform()
 
+    @allure.step("Check if logout button is visible")
+    @log_action
+    @screenshot_on_fail
     def is_logout_link_visible(self):
         return self.wait_for_element(self.LOGOUT_LINK)
 
+    @allure.step("Open product section")
+    @log_action
+    @screenshot_on_fail
     def open_product_section(self):
         self.actions.click(self.wait_for_element(self.CATALOG)).perform()
         self.actions.click(self.wait_for_element(self.PRODUCT)).perform()
 
+    @allure.step("Open section of adding product")
+    @log_action
+    @screenshot_on_fail
     def open_add_product(self):
         self.actions.click(self.wait_for_element(self.ADD_BUTTON)).perform()
 
+    @allure.step("Filling required fields")
+    @log_action
+    @screenshot_on_fail
     def fill_required_fields(self):
         self.actions.click(self.wait_for_element(self.PRODUCT_NAME_PLACEHOLDER)).send_keys(self.PRODUCT_NAME).perform()
         self.actions.click(self.wait_for_element(self.META_TITLE_PLACEHOLDER)).send_keys(self.PRODUCT_NAME).perform()
@@ -53,6 +70,9 @@ class AdminPage(BasePage):
     def is_success(self):
         return self.wait_for_element(self.SUCCESS_DONE)
 
+    @allure.step("Deleting some product")
+    @log_action
+    @screenshot_on_fail
     def delete_some_item(self):
         self.actions.click(self.wait_for_element(self.RANDOM_ITEM_TO_DELETE)).perform()
         self.actions.click(self.wait_for_element(self.DELETE_BUTTON)).perform()

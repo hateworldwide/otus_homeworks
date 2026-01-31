@@ -1,7 +1,16 @@
 import pytest
+import logging
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options as ChromeOps
 from selenium.webdriver.firefox.options import Options as FFOps
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    handlers=[
+        logging.FileHandler("log.log")
+    ]
+)
 
 def pytest_addoption(parser):
     parser.addoption(
@@ -41,7 +50,5 @@ def browser(request):
         raise ValueError(f"Driver for {browser_name} not supported")
 
     driver.base_url = base_url
-
     yield driver
-
     driver.quit()
