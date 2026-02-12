@@ -1,4 +1,31 @@
 services:
+  selenoid:
+    image: aerokube/selenoid:1.11.3
+    container_name: selenoid
+    hostname: selenoid
+    networks:
+      - selenoid
+    ports:
+      - "4444:4444"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./browsers.json:/etc/selenoid/browsers.json:ro
+    command: >
+      -conf /etc/selenoid/browsers.json
+      -container-network selenoid
+      -limit 10
+
+  selenoid_ui:
+    image: aerokube/selenoid-ui:1.10.11
+    container_name: selenoid_ui
+    hostname: selenoid_ui
+    depends_on:
+      - selenoid
+    networks:
+      - selenoid
+    ports:
+      - "8080:8083"
+    command: ["--selenoid-uri", "http://selenoid:4444"]
 
   mariadb:
     image: mysql:8.0
@@ -9,9 +36,15 @@ services:
       MYSQL_USER: opencart
       MYSQL_PASSWORD: password
     ports:
-      - '3306:3306'
+      - '3306:3366'
     volumes:
       - mariadb_data:/var/lib/mysql
+    healthcheck:
+      test: [ "CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
     networks:
       - selenoid
 
@@ -54,12 +87,15 @@ services:
       - selenoid
 
   tests:
+    build:
+      context: .
+      dockerfile: Dockerfile
     image: opencart-tests
     container_name: opencart_tests
     working_dir: scr
     depends_on:
-      opencart:
-        condition: service_healthy
+      - selenoid_ui
+      - opencart
     command: >
       pytest -v test_part3.py
       --url opencart:8080
