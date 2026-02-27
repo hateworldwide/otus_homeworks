@@ -1,3 +1,4 @@
+import allure
 from selenium.webdriver import ActionChains
 from selenium.webdriver.common.by import By
 
@@ -15,13 +16,11 @@ class CartPage(BasePage):
 
     @allure.step("Get item name")
     @log_action
-    @screenshot_on_fail
     def get_item_name(self):
         return self.wait_for_element(self.ITEM_IN_CART).text
 
     @allure.step("Get all prices")
     @log_action
-    @screenshot_on_fail
     def get_all_prices(self):
         self.wait_for_element(self.PRICES_IN_CART)
         price_elements = self.browser.find_elements(*self.PRICES_IN_CART)

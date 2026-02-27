@@ -1,5 +1,6 @@
 import time
 
+import allure
 from selenium.webdriver.common.by import By
 
 from scr.utils.allure_decorators import *
@@ -22,21 +23,18 @@ class MainPage(BasePage):
 
     @allure.step("Get random product")
     @log_action
-    @screenshot_on_fail
     def get_random_product(self):
         product = self.find_element(self.PRODUCT_RANDOM)
         return product
 
     @allure.step("Get product name")
     @log_action
-    @screenshot_on_fail
     def get_product_name(self, product):
         product_name_element = product.find_element(*self.PRODUCT_NAME)
         return product_name_element.text
 
     @allure.step("Add product to cart")
     @log_action
-    @screenshot_on_fail
     def add_to_cart(self, product):
         add_to_cart_button = product.find_element(*self.PRODUCT_ADD_TO_CARD)
         self.actions.click(add_to_cart_button).perform()
@@ -45,7 +43,6 @@ class MainPage(BasePage):
 
     @allure.step("Open cart page")
     @log_action
-    @screenshot_on_fail
     def go_to_cart(self):
         cart_url = f"http://{self.browser.base_url}/en-gb?route=checkout/cart"
         self.browser.get(cart_url)
@@ -54,7 +51,6 @@ class MainPage(BasePage):
 
     @allure.step("Get all prices")
     @log_action
-    @screenshot_on_fail
     def get_all_prices(self):
         self.wait_for_element(self.PRICE_NEW)
         price_elements = self.browser.find_elements(*self.PRICE_NEW)
@@ -62,7 +58,6 @@ class MainPage(BasePage):
 
     @allure.step("Open register page")
     @log_action
-    @screenshot_on_fail
     def open_register(self):
         self.find_element(self.MY_ACCOUNT).click()
         self.wait_for_element(self.REGISTER).click()

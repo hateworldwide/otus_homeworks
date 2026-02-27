@@ -1,3 +1,4 @@
+import allure
 import pytest
 import logging
 from selenium import webdriver
@@ -12,16 +13,32 @@ logging.basicConfig(
     ]
 )
 
+@pytest.hookimpl(hookwrapper=True)
+def pytest_runtest_makereport(item):
+    outcome = yield
+    report = outcome.get_result()
+
+    if report.when == "call" and report.failed:
+        browser = item.funcargs.get("browser")
+        if browser:
+            screenshot = browser.get_screenshot_as_png()
+            allure.attach(
+                screenshot,
+                name=f"Screenshot on failure",
+                attachment_type=allure.attachment_type.PNG,
+            )
+
+
 def pytest_addoption(parser):
     parser.addoption(
         "--browser",
         action="store",
-        default="chrome",
+        default="firefox",
         help="Default browser is edge, you can also choose chrome or firefox")
     parser.addoption(
         "--url",
         action="store",
-        default="localhost",
+        default="192.168.1.110",
         help="This request url"
     )
 
@@ -32,18 +49,26 @@ def browser(request):
 
     if browser_name == "chrome":
         options = ChromeOps()
+        options.add_argument('--headless=new')
+        options.add_argument('--disable-dev-shm-usage')
         options.add_argument("--window-size=1920,1080")
         options.add_argument("--disable-gpu")
         options.add_argument("--no-sandbox")
+
         driver = webdriver.Chrome(options=options)
 
     elif browser_name == "firefox":
         options = FFOps()
+        options.add_argument("--headless")
+        options.add_argument("--width=1920")
+        options.add_argument("--height=1080")
         driver = webdriver.Firefox(options=options)
 
     elif browser_name == "edge":
         from selenium.webdriver.edge.options import Options as EdgeOptions
         options = EdgeOptions()
+        options.add_argument("--headless=new")
+        options.add_argument("--window-size=1920,1080")
         driver = webdriver.Edge(options=options)
 
     else:
